@@ -8,6 +8,8 @@ builds:
     binary: www
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/patrickjm/www/internal/app.Version={{.Version}}
     goos:
       - darwin
       - linux
