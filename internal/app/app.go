@@ -95,7 +95,11 @@ func (a App) runDoctor(cfg config.Config, flags GlobalFlags) int {
 	}
 	res := result{ProfileDir: cfg.ProfileDir, BrowsersPath: os.Getenv("PLAYWRIGHT_BROWSERS_PATH")}
 	if err := os.MkdirAll(cfg.ProfileDir, 0o755); err == nil {
-		res.ProfileDirWritable = true
+		testFile := filepath.Join(cfg.ProfileDir, ".www-writetest")
+		if err := os.WriteFile(testFile, []byte("ok"), 0o644); err == nil {
+			res.ProfileDirWritable = true
+			_ = os.Remove(testFile)
+		}
 	}
 	if pw, err := playwright.Run(); err == nil {
 		res.PlaywrightOK = true

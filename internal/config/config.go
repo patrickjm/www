@@ -77,21 +77,37 @@ func loadSystemConfig(cfg *Config) error {
 }
 
 func defaultProfileDir() string {
-	if _, err := os.Stat("/opt/homebrew/var"); err == nil {
-		return "/opt/homebrew/var/www"
-	}
-	if _, err := os.Stat("/usr/local/var"); err == nil {
-		return "/usr/local/var/www"
-	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "/tmp/www"
 	}
+	userDefault := ""
 	if runtime.GOOS == "darwin" {
-		return filepath.Join(home, "Library", "Application Support", "www")
+		userDefault = filepath.Join(home, "Library", "Application Support", "www")
+	} else {
+		if xdg := strings.TrimSpace(os.Getenv("XDG_DATA_HOME")); xdg != "" {
+			userDefault = filepath.Join(xdg, "www")
+		} else {
+			userDefault = filepath.Join(home, ".local", "share", "www")
+		}
 	}
-	if xdg := strings.TrimSpace(os.Getenv("XDG_DATA_HOME")); xdg != "" {
-		return filepath.Join(xdg, "www")
+	if isWritableDir("/opt/homebrew/var") {
+		return "/opt/homebrew/var/www"
 	}
-	return filepath.Join(home, ".local", "share", "www")
+	if isWritableDir("/usr/local/var") {
+		return "/usr/local/var/www"
+	}
+	return userDefault
+}
+
+func isWritableDir(path string) bool {
+	if err := os.MkdirAll(path, 0o755); err != nil {
+		return false
+	}
+	testFile := filepath.Join(path, ".www-writetest")
+	if err := os.WriteFile(testFile, []byte("ok"), 0o644); err != nil {
+		return false
+	}
+	_ = os.Remove(testFile)
+	return true
 }
