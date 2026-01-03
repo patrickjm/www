@@ -17,18 +17,25 @@ func (e exitError) Error() string {
 	return fmt.Sprintf("exit %d", e.code)
 }
 
+var Version = "dev"
+
 func Execute(args []string, out io.Writer, errOut io.Writer) int {
 	app := App{Out: out, Err: errOut}
 	flags := GlobalFlags{}
+	var showVersion bool
 
 	root := &cobra.Command{
 		Use:           "www",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return cmd.Help()
+		},
 	}
 	root.SetOut(out)
 	root.SetErr(errOut)
 
+	root.PersistentFlags().BoolVarP(&showVersion, "version", "V", false, "version")
 	root.PersistentFlags().StringVarP(&flags.Profile, "profile", "p", "", "profile name")
 	root.PersistentFlags().StringVarP(&flags.ProfileDir, "profile-dir", "D", "", "profile directory")
 	root.PersistentFlags().BoolVarP(&flags.JSON, "json", "j", false, "json output")
@@ -46,6 +53,14 @@ func Execute(args []string, out io.Writer, errOut io.Writer) int {
 	root.PersistentFlags().StringVarP(&flags.Selector, "selector", "S", "", "selector")
 	root.PersistentFlags().BoolVarP(&flags.Main, "main", "m", false, "use main content")
 	root.PersistentFlags().StringVarP(&flags.Timeout, "timeout", "t", "", "action timeout")
+
+	root.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
+		if showVersion {
+			fmt.Fprintln(out, Version)
+			return exitError{code: exitSuccess}
+		}
+		return nil
+	}
 
 	root.AddCommand(&cobra.Command{
 		Use:   "install",

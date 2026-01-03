@@ -8,6 +8,7 @@ Playwright-based CLI for persistent browser profiles and tab-level automation.
 www install
 www start -p demo
 www -p demo goto https://example.com
+www --version
 www -p demo url
 www -p demo links --filter "More"
 www -p demo read --main
