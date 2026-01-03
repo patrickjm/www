@@ -20,7 +20,7 @@ www -p demo stop
 This repo ships a Homebrew formula template. To distribute via brew, publish a release and install from the tap:
 
 ```sh
-brew install patrickjm/tap/www
+brew install --HEAD patrickjm/tap/www
 ```
 
 ### Go install
