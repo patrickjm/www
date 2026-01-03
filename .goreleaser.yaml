@@ -23,9 +23,10 @@ brews:
     homepage: https://github.com/patrickjm/www
     description: Playwright-based CLI for persistent browser profiles and automation
     license: MIT
-    tap:
+    repository:
       owner: patrickjm
       name: homebrew-tap
+    directory: Formula
     install: |
       bin.install "www"
     test: |
