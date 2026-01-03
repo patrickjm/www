@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"www/internal/browser"
+	"github.com/patrickjm/www/internal/browser"
 )
 
 func waitForSocket(path string, timeout time.Duration) error {

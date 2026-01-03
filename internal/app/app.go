@@ -12,10 +12,10 @@ import (
 
 	"github.com/playwright-community/playwright-go"
 
-	"www/internal/browser"
-	"www/internal/config"
-	"www/internal/daemon"
-	"www/internal/profile"
+	"github.com/patrickjm/www/internal/browser"
+	"github.com/patrickjm/www/internal/config"
+	"github.com/patrickjm/www/internal/daemon"
+	"github.com/patrickjm/www/internal/profile"
 )
 
 type GlobalFlags struct {

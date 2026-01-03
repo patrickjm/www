@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync/atomic"
 
-	"www/internal/browser"
+	"github.com/patrickjm/www/internal/browser"
 )
 
 type Client struct {

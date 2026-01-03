@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"www/internal/browser"
+	"github.com/patrickjm/www/internal/browser"
 )
 
 type Server struct {

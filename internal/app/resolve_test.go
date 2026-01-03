@@ -3,7 +3,7 @@ package app
 import (
 	"testing"
 
-	"www/internal/daemon"
+	"github.com/patrickjm/www/internal/daemon"
 )
 
 func TestResolveTabIDFromStatus(t *testing.T) {

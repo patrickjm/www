@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"www/internal/app"
+	"github.com/patrickjm/www/internal/app"
 )
 
 func main() {
