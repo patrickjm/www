@@ -1,0 +1,30 @@
+project_name: www
+
+builds:
+  - id: www
+    main: ./cmd/www
+    binary: www
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+
+brews:
+  - name: www
+    homepage: https://github.com/patrickjm/www
+    description: Playwright-based CLI for persistent browser profiles and automation
+    license: MIT
+    tap:
+      owner: patrickjm
+      name: homebrew-tap
+    install: |
+      bin.install "www"
+    test: |
+      system "#{bin}/www", "--help"
