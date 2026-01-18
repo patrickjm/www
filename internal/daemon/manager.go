@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -93,15 +95,32 @@ func (m Manager) Start(profile string) error {
 		}
 		m.BinaryPath = path
 	}
+	profileDir := filepath.Join(m.ProfileDir, profile)
+	if err := os.MkdirAll(profileDir, 0o755); err != nil {
+		return err
+	}
+	logPath := filepath.Join(profileDir, "daemon.log")
+	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	if err != nil {
+		logFile = nil
+	}
 	cmd := exec.Command(m.BinaryPath, "--profile", profile, "--profile-dir", m.ProfileDir, "serve")
-	cmd.Stdout = nil
-	cmd.Stderr = nil
+	if logFile != nil {
+		cmd.Stdout = logFile
+		cmd.Stderr = logFile
+	}
 	cmd.Stdin = nil
 	if runtime.GOOS != "windows" {
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	}
 	if err := cmd.Start(); err != nil {
+		if logFile != nil {
+			_ = logFile.Close()
+		}
 		return err
+	}
+	if logFile != nil {
+		_ = logFile.Close()
 	}
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
@@ -109,6 +128,9 @@ func (m Manager) Start(profile string) error {
 			return nil
 		}
 		time.Sleep(100 * time.Millisecond)
+	}
+	if tail := tailFile(logPath, 8*1024); tail != "" {
+		return fmt.Errorf("daemon did not start: %s", tail)
 	}
 	return errors.New("daemon did not start")
 }
@@ -175,6 +197,34 @@ func CurrentBinaryInfo() (string, time.Time, error) {
 		return path, time.Time{}, err
 	}
 	return path, stat.ModTime().UTC(), nil
+}
+
+func tailFile(path string, maxBytes int) string {
+	if maxBytes <= 0 {
+		return ""
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil {
+		return ""
+	}
+	if info.Size() <= 0 {
+		return ""
+	}
+	if info.Size() > int64(maxBytes) {
+		if _, err := f.Seek(-int64(maxBytes), io.SeekEnd); err != nil {
+			return ""
+		}
+	}
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
 }
 
 func (m Manager) RunningProfiles() ([]Info, error) {

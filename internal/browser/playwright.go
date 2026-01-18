@@ -29,6 +29,10 @@ func (p PlaywrightEngine) Start(opts StartOptions) (Session, error) {
 		launchOpts.Channel = playwright.String(opts.Channel)
 	}
 	browser, err := bt.Launch(launchOpts)
+	if err != nil && opts.Channel != "" && isMissingChannelErr(err) {
+		launchOpts.Channel = nil
+		browser, err = bt.Launch(launchOpts)
+	}
 	if err != nil {
 		pw.Stop()
 		return nil, err
@@ -337,6 +341,14 @@ func minInt(a, b, c int) int {
 		return b
 	}
 	return c
+}
+
+func isMissingChannelErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "distribution") && strings.Contains(msg, "not found")
 }
 
 func browserType(pw *playwright.Playwright, name string) (playwright.BrowserType, error) {

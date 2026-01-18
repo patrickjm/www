@@ -119,7 +119,7 @@ func (s Store) Upsert(name string, overrides Overrides) (Profile, bool, error) {
 		p = Profile{
 			Name:      name,
 			Browser:   "chromium",
-			Channel:   "chrome",
+			Channel:   "",
 			Headless:  true,
 			TTL:       int64(s.DefaultTTL.Seconds()),
 			CreatedAt: time.Now().UTC(),

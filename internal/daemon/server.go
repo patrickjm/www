@@ -334,18 +334,20 @@ func ServeProfile(socketPath string, profile string, engine browser.Engine, opts
 	if err := os.MkdirAll(filepath.Dir(socketPath), 0o755); err != nil {
 		return err
 	}
-	if err := os.RemoveAll(socketPath); err != nil {
-		return err
-	}
-	l, err := net.Listen("unix", socketPath)
-	if err != nil {
-		return err
-	}
-	defer l.Close()
 	server := NewServer(profile, engine, opts.StorageIn)
 	if err := server.Init(opts); err != nil {
 		return err
 	}
+	if err := os.RemoveAll(socketPath); err != nil {
+		_ = server.shutdownLocked()
+		return err
+	}
+	l, err := net.Listen("unix", socketPath)
+	if err != nil {
+		_ = server.shutdownLocked()
+		return err
+	}
+	defer l.Close()
 	go func() {
 		<-server.stop
 		_ = l.Close()
